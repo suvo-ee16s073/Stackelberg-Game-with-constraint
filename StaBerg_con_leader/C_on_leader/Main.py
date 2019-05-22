@@ -58,7 +58,7 @@ class Main:
         self.G = np.concatenate((np.concatenate((self.L_Bar, np.zeros(shape = (self.n, self.s))), axis = 1),np.concatenate((self.L, -self.M.T), axis = 1)))
         self.Sbar_b =  np.concatenate((self.Sf_bar_b, self.Sl_bar_b), axis = 0)
         self.Sbar =  np.concatenate((self.Sf_bar, self.Sl_bar), axis = 0)
-        self.S = np.concatenate((np.kron(np.ones((self.K, 1)), self.Sbar), self.Sf_bar_b), axis = 0)
+        self.S = np.concatenate((np.kron(np.ones((self.K, 1)), self.Sbar), self.Sbar_b), axis = 0)
         self.Ck = {}
         self.Dk = {}
         self.Ek = {}
@@ -219,7 +219,7 @@ class Main:
         return deltap_kj
 
     def delta_p_S(self):
-        temp_axis_1 = self.deltap_kj(1, 1)
+        temp_axis_1 = self.deltap_kj_S(1, 1)
         for col in range(2, self.K+2):
             temp_axis_1 = np.concatenate((temp_axis_1, self.deltap_kj_S(1, col)), axis = 1)
             
@@ -248,7 +248,7 @@ class Main:
         Big_q = s_tilde + np.dot(q_tilde, np.dot(delta_0, self.zeta_0)) + np.dot(q_tilde, delta_P_s)
         p = lcp(Big_M, Big_q)
         p_0 = lcp(self.M_, np.dot(self.q, self.zeta_0) + np.concatenate( ( np.zeros( (self.s, 1) ), self.r)))
-        if(p[0].any()  != None):        
+        if(p[0]  != None):        
             p_ =  np.reshape(p[0], (self.s+self.c, self.K+1),'F')        
         else:
             p_ = None        

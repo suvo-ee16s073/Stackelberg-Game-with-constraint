@@ -11,7 +11,7 @@ from C_on_leader.Main import Main
 # s = constrainghts dim
 
 
-K = 30
+K = 1
 n = 1
 m_1 = 1
 m_2 = 1
@@ -26,7 +26,7 @@ s = 2
 #s = 2
 
 
-A = np.matrix([[10]])
+A = np.matrix([[1]])
 B_1 = np.matrix([[2]])
 B_2 = np.matrix([[1]])
 Q_1  = np.matrix([[2]])
@@ -83,13 +83,11 @@ matrix_2 = obj.Build_matrics_2()
 Delta_p = obj.delta_p_() 
 Delta_0 = obj.delta_0()  
 P = obj.LCP(Delta_p, Delta_0)
-Xi = obj.Xi(Delta_0, Delta_p, P[0])
+Xi = obj.Xi(Delta_0, Delta_p, P[6], P[0])
 zeta = obj.Zeta(matrix_1['Ck_bar'], matrix_1['Fk_bar'], P, Xi )
 Zeta_ = obj.Zeta_(matrix_1['Ck_bar'], matrix_1['Fk_bar'], P, Xi, matrix_1['phi_k'])
 wk = obj.wk(leader_uc['gamma2'], matrix_1['Fk'],matrix_1['Ek'], zeta[1], zeta[2])
 xk, uk_,zeta1 = obj.uk_(follower_uc['gamma1'], follower_uc['P1'], zeta[1], wk, zeta[2])
-
-
 
 
 #######################################################################################
