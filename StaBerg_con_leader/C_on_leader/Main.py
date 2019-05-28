@@ -251,7 +251,8 @@ class Main:
         if eigen_vals.dtype == 'complex128':
             print("error : LCP matrix has complex eigen values")
             p = -1
-            return None
+            #return None
+            return None, None, None, None, Big_M, Big_q, eigen_vals
         else:
             p = lcp(Big_M, Big_q)
             p_0 = lcp(self.M_, np.dot(self.q, self.zeta_0) + np.concatenate( ( np.zeros( (self.s, 1) ), self.r)))

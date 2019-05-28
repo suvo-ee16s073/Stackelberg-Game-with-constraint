@@ -82,7 +82,7 @@ from C_on_leader.Main import Main
 
 
 """ data 3"""
-K = 6#
+K = 10#
 n = 4#
 m_1 = 2#
 m_2 = 2#
@@ -92,7 +92,7 @@ s = 1#
 
 
 
-A = np.matrix([[0.8, 0, 0, 0], [0, 0.8, 0, 0], [0, 0, 0.4, 0], [0, 0, 0, 0.1]])#
+A = np.matrix([[0.7, 0, 0, 0], [0, 0.01, 0, 0], [0, 0, 0.4, 0], [0, 0, 0, 0.1]])#
 B_2 = np.matrix([[1, 0], [0.75, 0], [0, 1], [0, 0]])# leader
 B_1 = np.matrix([[0.75, 0], [1, 0], [0, 0], [0, 1]])# follower
 Q_1  = -0.5*(np.matrix([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0.2, 0, 0]]) + np.dot(np.matrix([[0], [0], [0], [1]]), np.matrix([[0, 0, 0, 0.5]])) )#follower
@@ -116,7 +116,7 @@ Sf_bar_b = Sf_bar#
 Sl_bar = np.matrix([[0], [0], [0], [0]])#
 Sl_bar_b = np.matrix([[0], [0], [0], [0]])#
 #
-x0 = np.matrix([[3], [3], [3], [3]])#
+x0 = np.matrix([[30], [300], [300], [100]])#
 #
 #
 obj = Main(K, n, m_1, m_2, c, s, A, B_1, B_2, M, N, r, Q_1, R_11, R_12, Q_1b, Q_2, R_21, R_22, D, L, L_Bar, Q_2b, Sf_bar, Sf_bar_b, Sl_bar, Sl_bar_b, Pl_bar, x0)
@@ -128,8 +128,9 @@ matrix_2 = obj.Build_matrics_2()
 Delta_p = obj.delta_p_() 
 Delta_0 = obj.delta_0()  
 P = obj.LCP(Delta_p, Delta_0)
-if P is None:
+if P[0] is None:
     print("LCP not solvable")
+    print(P[6])
 else:
     Xi = obj.Xi(Delta_0, Delta_p, P[6], P[0])
     #zeta = obj.Zeta(matrix_1['Ck_bar'], matrix_1['Fk_bar'], P, Xi )
