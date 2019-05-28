@@ -10,8 +10,8 @@ from lemkelcp.lemkelcp import lemkelcp as lcp
 # c = v_k leader's control from constraint
 # s = constrainghts dim
 
-class Main:
-    def __init__(self, K, n, m_1, m_2, c, s, A, B_1, B_2, M, N, r, Q_1, R_11, R_12, Q_1b, Q_2, R_21, R_22, D, L, Q_2b, x0):
+class main1:
+    def __init__(self, K, n, m_1, m_2, c, s, A, B_1, B_2, M, N, r, Q_1, R_11, R_12, Q_1b, Q_2, R_21, R_22, D, L, L_Bar, Q_2b, Sf_bar, Sf_bar_b, Sl_bar, Sl_bar_b, Pl_bar, x0):
         ## dimensions
         self.K = K                 
         self.n = n
@@ -37,9 +37,15 @@ class Main:
         self.R_21 = R_21
         self.R_22 = R_22
         self.D = D
-        self.L = L      
+        self.L = L 
+        self.L_Bar = L_Bar
         self.Q_2b = Q_2b
         self.x0 = x0
+        self.Sl_bar = Sl_bar
+        self.Sl_bar_b = Sl_bar_b
+        self.Sf_bar = Sf_bar
+        self.Sf_bar_b = Sf_bar_b
+        self.Pl_bar = Pl_bar
         ## initialization before computation  
         self.gamma1 = {}
         self.upsilon1 = {}
@@ -49,7 +55,11 @@ class Main:
         self.S21 = {}
         self.P2 = {} 
         
-        self.G = np.concatenate((np.concatenate((np.zeros(shape = (self.n,self.c)), np.zeros(shape = (self.n, self.s))), axis = 1),np.concatenate((self.L, -self.M.T), axis = 1)))
+        #self.G = np.concatenate((np.concatenate((np.zeros(shape = (self.n,self.c)), np.zeros(shape = (self.n, self.s))), axis = 1),np.concatenate((self.L, -self.M.T), axis = 1)))
+        self.G = np.concatenate((np.concatenate((self.L_Bar, np.zeros(shape = (self.n, self.s))), axis = 1),np.concatenate((self.L, -self.M.T), axis = 1)))
+        self.Sbar_b =  np.concatenate((self.Sf_bar_b, self.Sl_bar_b), axis = 0)
+        self.Sbar =  np.concatenate((self.Sf_bar, self.Sl_bar), axis = 0)
+        self.S = np.concatenate((np.kron(np.ones((self.K, 1)), self.Sbar), self.Sbar_b), axis = 0)
         self.Ck = {}
         self.Dk = {}
         self.Ek = {}
@@ -127,7 +137,7 @@ class Main:
                 temp1 = linalg.inv(np.eye(2*self.n) - self.Dk_bar[ii] * self.phi_k[ii+1])
                 self.Ak_bar.update({ii : temp1 * self.Ck_bar[ii]})
                 self.Bk_bar.update({ii : temp1 * self.Dk_bar[ii]})
-                self.xi_k.update({ii : self.Ck_bar[ii].T * linalg.inv(                                                       np.eye(2*self.n) -  self.phi_k[ii+1] * self.Dk_bar[ii])})
+                self.xi_k.update({ii : self.Ck_bar[ii].T * linalg.inv(np.eye(2*self.n) - self.phi_k[ii+1] * self.Dk_bar[ii])}) 
         return {'Ak_bar' : self.Ak_bar, 'Bk_bar' : self.Bk_bar, 'xi_k' : self.xi_k}
     def epsilon_m_l(self, m, l):
         if(len(self.Ak_bar) == 0):
@@ -156,6 +166,21 @@ class Main:
                     Delta  = self.G  
                 else:
                     Delta = np.zeros(shape = (2*self.n, (self.s + self.c)))
+        return Delta  
+
+    def Delta_ml_S(self, m, l):    
+        if(len(self.xi_k) == 0):
+            print(" Compute xi_k first")
+        else:
+            if(l < m):
+                Delta = np.eye(2*self.n)
+                for ii in range(m-1, l-1, -1):
+                    Delta = self.xi_k[ii] * Delta
+            else:
+                if(l == m):
+                    Delta  = np.eye(2*self.n)
+                else:
+                    Delta = np.zeros(shape = (2*self.n, 2*self.n))
         return Delta       
         
     def deltap_kj(self, k, j):     
@@ -181,7 +206,32 @@ class Main:
                 else:
                     temp = np.concatenate((temp, self.deltap_kj(row, col)), axis = 1)
             temp_axis_1 = np.concatenate((temp_axis_1, temp), axis = 0)
-        return temp_axis_1            
+        return temp_axis_1      
+
+    def deltap_kj_S(self, k, j):     
+        if(len(self.Bk_bar) == 0):
+            print(" Compute Bk_bar first")
+        else:    
+            minimum = np.min(a = [k, j])
+            deltap_kj = np.zeros(shape = (2*self.n, 2*self.n))
+            for ii in range(1, minimum + 1):
+                temp = np.dot((self.epsilon_m_l(k, ii) * self.Bk_bar[ii-1]),  self.Delta_ml_S(j, ii))
+                deltap_kj = deltap_kj + temp 
+        return deltap_kj
+
+    def delta_p_S(self):
+        temp_axis_1 = self.deltap_kj_S(1, 1)
+        for col in range(2, self.K+2):
+            temp_axis_1 = np.concatenate((temp_axis_1, self.deltap_kj_S(1, col)), axis = 1)
+            
+        for row in range(2, self.K+2):
+            for col in range(1, self.K+2):
+                if(col == 1):
+                    temp = self.deltap_kj_S(row, col)
+                else:
+                    temp = np.concatenate((temp, self.deltap_kj_S(row, col)), axis = 1)
+            temp_axis_1 = np.concatenate((temp_axis_1, temp), axis = 0)
+        return np.dot(temp_axis_1, self.S)          
         
     def delta_0(self):
         temp = self.epsilon_m_l(1, 0)
@@ -190,26 +240,27 @@ class Main:
         return temp
       
     def LCP(self, delta_p, delta_0):
+        delta_P_s = self.delta_p_S()
         I = np.eye(self.K+1)
         M_tilde = np.kron(I, self.M_)
         q_tilde = np.kron(I, self.q)
-        s_tilde = np.kron(np.ones((self.K+1, 1)), np.concatenate( ( np.zeros( (self.s, 1) ), self.r) ))
+        s_tilde = np.kron(np.ones((self.K+1, 1)), np.concatenate( ( self.Pl_bar, self.r) ))
         Big_M = M_tilde + np.dot(q_tilde, delta_p)
-        Big_q = s_tilde + np.dot(q_tilde, np.dot(delta_0, self.zeta_0))
+        Big_q = s_tilde + np.dot(q_tilde, np.dot(delta_0, self.zeta_0)) + np.dot(q_tilde, delta_P_s)
         p = lcp(Big_M, Big_q)
         p_0 = lcp(self.M_, np.dot(self.q, self.zeta_0) + np.concatenate( ( np.zeros( (self.s, 1) ), self.r)))
         if p[0] is None:        
             p_ = None       
         else:
-            p_ = np.reshape(p[0], (self.s+self.c, self.K+1),'F')        
-        return np.array([p[0]]).T, np.array([p_0[0]]).T, p_, p, Big_M, Big_q
+            p_ = np.reshape(p[0], (self.s+self.c, self.K+1),'F') 
+        return np.array([p[0]]).T, np.array([p_0[0]]).T, p_, p, Big_M, Big_q, delta_P_s
         
         
-    def Xi(self, delta_0, delta_p, p):
-        Xi = np.dot(delta_0, self.zeta_0) + np.dot(delta_p, p)
+    def Xi(self, delta_0, delta_p, delta_P_s, p):
+        Xi = np.dot(delta_0, self.zeta_0) + np.dot(delta_p, p) + delta_P_s
         Xi_ = np.reshape(Xi, (2*self.n, self.K+1),'F')
-        return Xi,Xi_
-        
+        return Xi, Xi_
+        ############################################### have to modify after this
     def Zeta(self, C_k_bar, F_k_bar , P, Xi): # modify xi and p
         p_k =  np.concatenate((P[1] ,P[2]), axis = 1)
         Xi =  np.concatenate((self.zeta_0 ,Xi[1]), axis = 1)
@@ -228,13 +279,17 @@ class Main:
         for ii in range(0, self.K+2):
             temp = np.zeros(shape= (2*self.n, 1))
             for jj in range(ii, self.K+2):
-                temp = temp + np.dot(self.Delta_ml(jj, ii), np.array([p_k[:, jj]]).T)
+                if(jj == self.K+1):
+                    ss = self.Sbar_b
+                else:
+                    ss = self.Sbar
+                temp = temp + np.dot(self.Delta_ml(jj, ii), np.array([p_k[:, jj]]).T) + np.dot(self.Delta_ml_S(jj, ii), ss) #add s terms eqs after 29 
                 delta.update({ii : temp})
-        zeta_K_plus_1 = np.dot(self.G, np.array([p_k[:, self.K]]).T)
+        zeta_K_plus_1 = np.dot(self.G, np.array([p_k[:, self.K]]).T) + self.Sbar_b #add s terms eq 26(b)
         zeta =  zeta_K_plus_1
         temp = zeta
         for ii in range(self.K, -1, -1):
-            temp =  np.dot(phi[ii], Xi[:,ii]) + delta[ii]
+            temp =  np.dot(phi[ii], Xi[:,ii]) + delta[ii]  #add s terms eq assumption 4
             zeta = np.concatenate((temp , zeta), axis = 1)        
         return p_k, Xi, zeta, delta
         
@@ -252,9 +307,9 @@ class Main:
         uk = {}
         temp4_ = self.x0  
         for ii in range(1, self.K+2):
-            temppp =  np.dot(self.A, temp4_) +  np.dot(self.B_2,  wk[0,ii-1])
-            temp4_ = temppp - np.dot(np.dot(self.B_1, np.linalg.inv(gamma1[ii])),np.dot(self.B_1.T,(np.dot(P1[ii], temppp)+zeta1[0,ii])))
-            temp4 = -np.dot(np.dot(np.linalg.inv(gamma1[ii]), self.B_1.T),(np.dot(P1[ii], temppp)+zeta1[0,ii]))
+            temppp =  np.dot(self.A, temp4_) +  np.dot(self.B_2,  wk[:,ii-1])
+            temp4_ = temppp - np.dot(np.dot(self.B_1, np.linalg.inv(gamma1[ii])),np.dot(self.B_1.T,(np.dot(P1[ii], temppp)+zeta1[:,ii])))
+            temp4 = -np.dot(np.dot(np.linalg.inv(gamma1[ii]), self.B_1.T),(np.dot(P1[ii], temppp)+zeta1[:,ii]))
             uk.update({ii-1 : temp4})
         temp1 = uk[0]
         for jj in range(1, self.K+1):

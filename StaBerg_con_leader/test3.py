@@ -11,7 +11,7 @@ from C_on_leader.Main import Main
 # s = constrainghts dim
 
 
-K = 5#
+K = 6#
 n = 4#
 m_1 = 2#
 m_2 = 2#
@@ -21,7 +21,7 @@ s = 1#
 
 
 
-A = np.matrix([[0.8, 0, 0, 0], [0, 0.8, 0, 0], [0, 0, 0.8, 0], [0, 0, 0, 0.8]])#
+A = np.matrix([[0.8, 0, 0, 0], [0, 0.8, 0, 0], [0, 0, 0.4, 0], [0, 0, 0, 0.1]])#
 B_2 = np.matrix([[1, 0], [0.75, 0], [0, 1], [0, 0]])# leader
 B_1 = np.matrix([[0.75, 0], [1, 0], [0, 0], [0, 1]])# follower
 Q_1  = -0.5*(np.matrix([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0.2, 0, 0]]) + np.dot(np.matrix([[0], [0], [0], [1]]), np.matrix([[0, 0, 0, 0.5]])) )#follower
@@ -37,13 +37,15 @@ N = np.matrix([[-1]])#
 r = np.matrix([[0]])#
 D = 0.5*np.matrix([[0.5]])# leader
 L = - np.matrix([[0],[0],[0],[0.2]]) -  np.matrix([[0],[0],[0],[0.5]])#
+
 L_Bar = np.matrix([[0], [0], [0], [0.5]]) #
 Pl_bar = np.matrix([[0.5]]) - np.matrix([[3]]) #
 Sf_bar = np.matrix([[0], [0], [0], [0.5]]) - np.matrix([[0], [0], [0], [3]]) #
 Sf_bar_b = Sf_bar#
 Sl_bar = np.matrix([[0], [0], [0], [0]])#
 Sl_bar_b = np.matrix([[0], [0], [0], [0]])#
-x0 = np.matrix([[3], [3], [3], [3]])#
+
+x0 = np.matrix([[30], [2], [3], [3]])#
 
 
 
@@ -73,7 +75,10 @@ gamma1 = follower_uc['gamma1']
 temp1_ = x0
 temp11_ = x0
 for ii in range(1, obj.K+2):
-    temp1_ = np.dot( np.dot(upsilon[ii],A), temp1_) +  np.dot( np.dot(upsilon[ii], B_2),  wk[0,ii-1]) - np.dot(np.dot(B_1, np.linalg.inv(gamma1[ii])),np.dot(B_1.T,zeta1[0,ii]))
+    tt = np.dot(B_1, np.linalg.inv(gamma1[ii]))
+    tt_ = np.dot(B_1.T,zeta1[0,ii])
+    ttt = np.dot(tt, tt_)
+    temp1_ = np.dot( np.dot(upsilon[ii],A), temp1_) +  np.dot( np.dot(upsilon[ii], B_2),  wk[0,ii-1]) #- ttt
     temp11_ = np.concatenate((temp11_, temp1_), axis = 1)
     
     

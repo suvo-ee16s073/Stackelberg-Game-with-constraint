@@ -11,7 +11,7 @@ from lemkelcp.lemkelcp import lemkelcp as lcp
 # s = constrainghts dim
 
 class Main:
-    def __init__(self, K, n, m_1, m_2, c, s, A, B_1, B_2, M, N, r, Q_1, R_11, R_12, Q_1b, Q_2, R_21, R_22, D, L, L_Bar, Q_2b, Sf_bar, Sf_bar_b, Sl_bar, Sl_bar_b, x0):
+    def __init__(self, K, n, m_1, m_2, c, s, A, B_1, B_2, M, N, r, Q_1, R_11, R_12, Q_1b, Q_2, R_21, R_22, D, L, L_Bar, Q_2b, Sf_bar, Sf_bar_b, Sl_bar, Sl_bar_b, Pl_bar, x0):
         ## dimensions
         self.K = K                 
         self.n = n
@@ -45,6 +45,7 @@ class Main:
         self.Sl_bar_b = Sl_bar_b
         self.Sf_bar = Sf_bar
         self.Sf_bar_b = Sf_bar_b
+        self.Pl_bar = Pl_bar
         ## initialization before computation  
         self.gamma1 = {}
         self.upsilon1 = {}
@@ -243,15 +244,15 @@ class Main:
         I = np.eye(self.K+1)
         M_tilde = np.kron(I, self.M_)
         q_tilde = np.kron(I, self.q)
-        s_tilde = np.kron(np.ones((self.K+1, 1)), np.concatenate( ( np.zeros( (self.s, 1) ), self.r) ))
+        s_tilde = np.kron(np.ones((self.K+1, 1)), np.concatenate( ( self.Pl_bar, self.r) ))
         Big_M = M_tilde + np.dot(q_tilde, delta_p)
         Big_q = s_tilde + np.dot(q_tilde, np.dot(delta_0, self.zeta_0)) + np.dot(q_tilde, delta_P_s)
         p = lcp(Big_M, Big_q)
         p_0 = lcp(self.M_, np.dot(self.q, self.zeta_0) + np.concatenate( ( np.zeros( (self.s, 1) ), self.r)))
-        if(p[0]  != None):        
-            p_ =  np.reshape(p[0], (self.s+self.c, self.K+1),'F')        
+        if p[0] is None:        
+            p_ = None       
         else:
-            p_ = None        
+            p_ = np.reshape(p[0], (self.s+self.c, self.K+1),'F') 
         return np.array([p[0]]).T, np.array([p_0[0]]).T, p_, p, Big_M, Big_q, delta_P_s
         
         
@@ -288,7 +289,7 @@ class Main:
         zeta =  zeta_K_plus_1
         temp = zeta
         for ii in range(self.K, -1, -1):
-            temp =  np.dot(phi[ii], Xi[:,ii]) + delta[ii] + self.Sbar #add s terms eq assumption 4
+            temp =  np.dot(phi[ii], Xi[:,ii]) + delta[ii]  #add s terms eq assumption 4
             zeta = np.concatenate((temp , zeta), axis = 1)        
         return p_k, Xi, zeta, delta
         
@@ -306,9 +307,9 @@ class Main:
         uk = {}
         temp4_ = self.x0  
         for ii in range(1, self.K+2):
-            temppp =  np.dot(self.A, temp4_) +  np.dot(self.B_2,  wk[0,ii-1])
-            temp4_ = temppp - np.dot(np.dot(self.B_1, np.linalg.inv(gamma1[ii])),np.dot(self.B_1.T,(np.dot(P1[ii], temppp)+zeta1[0,ii])))
-            temp4 = -np.dot(np.dot(np.linalg.inv(gamma1[ii]), self.B_1.T),(np.dot(P1[ii], temppp)+zeta1[0,ii]))
+            temppp =  np.dot(self.A, temp4_) +  np.dot(self.B_2,  wk[:,ii-1])
+            temp4_ = temppp - np.dot(np.dot(self.B_1, np.linalg.inv(gamma1[ii])),np.dot(self.B_1.T,(np.dot(P1[ii], temppp)+zeta1[:,ii])))
+            temp4 = -np.dot(np.dot(np.linalg.inv(gamma1[ii]), self.B_1.T),(np.dot(P1[ii], temppp)+zeta1[:,ii]))
             uk.update({ii-1 : temp4})
         temp1 = uk[0]
         for jj in range(1, self.K+1):

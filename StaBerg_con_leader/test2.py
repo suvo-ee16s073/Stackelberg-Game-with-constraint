@@ -1,6 +1,6 @@
 import numpy as np
 from C_on_leader.Main import Main
-from C_on_leader.main1 import main1
+
 
 ######### matrics and dimensions
 # K = number of stages (0 -> T)
@@ -11,59 +11,7 @@ from C_on_leader.main1 import main1
 # s = constrainghts dim
 
 
-#K = 3
-#n = 1
-#m_1 = 1
-#m_2 = 1
-#c = 2
-#s = 2
-
-K = 15
-n = 2
-m_1 = 1
-m_2 = 1
-c = 2
-s = 2
-
-
-#A = np.matrix([[10]])
-#B_1 = np.matrix([[2]])
-#B_2 = np.matrix([[1]])
-#Q_1  = np.matrix([[2]])
-#Q_2 = np.matrix([[4]])
-#R_11 = np.matrix([[1]])
-#R_22 = np.matrix([[7]])
-#R_12 = np.matrix([[1]])
-#R_21 = np.matrix([[1]])
-#Q_1b = np.matrix([[1]])
-#Q_2b = np.matrix([[2]])
-#M = np.matrix([[2],[1]])
-#N = np.matrix([[1, 3],[3, 5]])
-#r = np.matrix([[0], [8]])
-#D = np.matrix([[1, 0], [0, 24]])
-#L = np.matrix([[1, 8]])
-#x0 = np.matrix([[-70]])
-
-A = np.matrix([[0.4, 1],[0.3, 1]])
-B_1 = np.matrix([[0.1], [1]])
-B_2 = np.matrix([[1], [0]])
-Q_1  = np.matrix([[0, 0],[0, 4]])
-Q_2 = np.matrix([[4, 0], [0, 10]])
-R_11 = np.matrix([[1]])
-R_22 = np.matrix([[1]])
-R_12 = np.matrix([[2]])
-R_21 = np.matrix([[1]])
-Q_1b = np.matrix([[1, 0], [0, 1]])
-Q_2b = np.matrix([[1, 0], [0, 1]])
-M = np.matrix([[2, 1],[1, 10]])
-N = np.matrix([[1, 2],[3, 7]])
-r = np.matrix([[0], [8]])
-D = np.matrix([[14, 0], [7, 0]]) 
-L = np.matrix([[1, 8],[4, 5]])
-x0 = np.matrix([[10],[1]])
-
-
-#K = 3#
+#K = 15#
 #n = 4#
 #m_1 = 2#
 #m_2 = 2#
@@ -94,16 +42,80 @@ x0 = np.matrix([[10],[1]])
 #r = np.matrix([[0]])#
 #D = 0.5*np.matrix([[0.5]])# leader
 #L = - np.matrix([[0],[0],[0],[0.2]]) -  np.matrix([[0],[0],[0],[0.5]])#
-##L_Bar = np.matrix([[0], [0], [0], [0.5]]) #
-##Pl_bar = np.matrix([[0.5]]) - np.matrix([[3]]) #
-##Sf_bar = np.matrix([[0], [0], [0], [0.5]]) - np.matrix([[0], [0], [0], [3]]) #
-##Sf_bar_b = Sf_bar#
-##Sl_bar = np.matrix([[0], [0], [0], [0]])#
-##Sl_bar_b = np.matrix([[0], [0], [0], [0]])#
+#L_Bar = np.matrix([[0], [0], [0], [0.5]]) #
+#Pl_bar = np.matrix([[0.5]]) - np.matrix([[3]]) #
+#Sf_bar = np.matrix([[0], [0], [0], [0.5]]) - np.matrix([[0], [0], [0], [3]]) #
+#Sf_bar_b = Sf_bar#
+#Sl_bar = np.matrix([[0], [0], [0], [0]])#
+#Sl_bar_b = np.matrix([[0], [0], [0], [0]])#
 #x0 = np.matrix([[3], [3], [3], [3]])#
 
+#L_Bar = np.matrix([[2, 5]])
+#Sf_bar = np.matrix([[3]])
+#Sf_bar_b = np.matrix([[0]])
+#Sl_bar = np.matrix([[50]])
+#Sl_bar_b = np.matrix([[1]])
 
-obj = Main( K, n, m_1, m_2, c, s, A, B_1, B_2, M, N, r, Q_1, R_11, R_12, Q_1b, Q_2, R_21, R_22, D, L, Q_2b, x0)
+#A = np.matrix([[1, 1],[3, 7]])
+#B_1 = np.matrix([[1], [1]])
+#B_2 = np.matrix([[1], [4]])
+#Q_1  = np.matrix([[2, 0],[0, 4]])
+#Q_2 = np.matrix([[4, 0], [0, 1]])
+#R_11 = np.matrix([[1]])
+#R_22 = np.matrix([[1]])
+#R_12 = np.matrix([[2]])
+#R_21 = np.matrix([[1]])
+#Q_1b = np.matrix([[1, 0], [0, 1]])
+#Q_2b = np.matrix([[1, 0], [0, 1]])
+#M = np.matrix([[2, 1],[1, 10]])
+#N = np.matrix([[1, 2],[3, 7]])
+#r = np.matrix([[0], [8]])
+#D = np.matrix([[14, 0], [7, 0]]) 
+#L = np.matrix([[1, 8],[4, 5]])
+#x0 = np.matrix([[1],[1]])
+
+
+K = 9
+n = 1
+m_1 = 1
+m_2 = 1
+c = 2
+s = 2
+
+#K = 3
+#n = 2
+#m_1 = 2
+#m_2 = 2
+#c = 2
+#s = 2
+
+
+A = np.matrix([[10]])
+B_1 = np.matrix([[2]])
+B_2 = np.matrix([[1]])
+Q_1  = np.matrix([[2]])
+Q_2 = np.matrix([[4]])
+R_11 = np.matrix([[1]])
+R_22 = np.matrix([[7]])
+R_12 = np.matrix([[1]])
+R_21 = np.matrix([[1]])
+Q_1b = np.matrix([[1]])
+Q_2b = np.matrix([[2]])
+M = np.matrix([[2],[1]])
+N = np.matrix([[1, 3],[3, 5]])
+r = np.matrix([[0], [8]])
+D = np.matrix([[1, 0], [0, 24]])
+L = np.matrix([[1, 8]])
+L_Bar = np.matrix([[1, 0]]) #
+Pl_bar = np.matrix([[0], [4]]) #
+Sf_bar = np.matrix([[6]]) #
+Sf_bar_b = np.matrix([[1]])#
+Sl_bar = np.matrix([[8]])#
+Sl_bar_b = np.matrix([[800]])#
+x0 = np.matrix([[-70]])
+
+#obj = Main( K, n, m_1, m_2, c, s, A, B_1, B_2, M, N, r, Q_1, R_11, R_12, Q_1b, Q_2, R_21, R_22, D, L, Q_2b, x0)
+obj = Main(K, n, m_1, m_2, c, s, A, B_1, B_2, M, N, r, Q_1, R_11, R_12, Q_1b, Q_2, R_21, R_22, D, L, L_Bar, Q_2b, Sf_bar, Sf_bar_b, Sl_bar, Sl_bar_b, Pl_bar, x0)
 follower_uc = obj.follower_noncoupled()
 leader_uc = obj.leader_noncoupled()
 matrix_1 = obj.Build_matrics_1()
@@ -112,13 +124,11 @@ matrix_2 = obj.Build_matrics_2()
 Delta_p = obj.delta_p_() 
 Delta_0 = obj.delta_0()  
 P = obj.LCP(Delta_p, Delta_0)
-Xi = obj.Xi(Delta_0, Delta_p, P[0])
+Xi = obj.Xi(Delta_0, Delta_p, P[6], P[0])
 zeta = obj.Zeta(matrix_1['Ck_bar'], matrix_1['Fk_bar'], P, Xi )
 Zeta_ = obj.Zeta_(matrix_1['Ck_bar'], matrix_1['Fk_bar'], P, Xi, matrix_1['phi_k'])
 wk = obj.wk(leader_uc['gamma2'], matrix_1['Fk'],matrix_1['Ek'], zeta[1], zeta[2])
 xk, uk_,zeta1 = obj.uk_(follower_uc['gamma1'], follower_uc['P1'], zeta[1], wk, zeta[2])
-
-
 
 
 #######################################################################################
