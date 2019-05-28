@@ -247,13 +247,19 @@ class Main:
         s_tilde = np.kron(np.ones((self.K+1, 1)), np.concatenate( ( self.Pl_bar, self.r) ))
         Big_M = M_tilde + np.dot(q_tilde, delta_p)
         Big_q = s_tilde + np.dot(q_tilde, np.dot(delta_0, self.zeta_0)) + np.dot(q_tilde, delta_P_s)
-        p = lcp(Big_M, Big_q)
-        p_0 = lcp(self.M_, np.dot(self.q, self.zeta_0) + np.concatenate( ( np.zeros( (self.s, 1) ), self.r)))
-        if p[0] is None:        
-            p_ = None       
+        eigen_vals = np.linalg.eigvals(np.array([Big_M]))
+        if eigen_vals.dtype == 'complex128':
+            print("error : LCP matrix has complex eigen values")
+            p = -1
+            return None
         else:
-            p_ = np.reshape(p[0], (self.s+self.c, self.K+1),'F') 
-        return np.array([p[0]]).T, np.array([p_0[0]]).T, p_, p, Big_M, Big_q, delta_P_s
+            p = lcp(Big_M, Big_q)
+            p_0 = lcp(self.M_, np.dot(self.q, self.zeta_0) + np.concatenate( ( np.zeros( (self.s, 1) ), self.r)))
+            if p[0] is None:        
+                p_ = None       
+            else:
+                p_ = np.reshape(p[0], (self.s+self.c, self.K+1),'F') 
+            return np.array([p[0]]).T, np.array([p_0[0]]).T, p_, p, Big_M, Big_q, delta_P_s
         
         
     def Xi(self, delta_0, delta_p, delta_P_s, p):

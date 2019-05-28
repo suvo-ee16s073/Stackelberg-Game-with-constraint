@@ -82,7 +82,7 @@ from C_on_leader.Main import Main
 
 
 """ data 3"""
-K = 5#
+K = 6#
 n = 4#
 m_1 = 2#
 m_2 = 2#
@@ -128,71 +128,74 @@ matrix_2 = obj.Build_matrics_2()
 Delta_p = obj.delta_p_() 
 Delta_0 = obj.delta_0()  
 P = obj.LCP(Delta_p, Delta_0)
-Xi = obj.Xi(Delta_0, Delta_p, P[6], P[0])
-#zeta = obj.Zeta(matrix_1['Ck_bar'], matrix_1['Fk_bar'], P, Xi )
-Zeta_ = obj.Zeta_(matrix_1['Ck_bar'], matrix_1['Fk_bar'], P, Xi, matrix_1['phi_k'])
-wk = obj.wk(leader_uc['gamma2'], matrix_1['Fk'],matrix_1['Ek'], Zeta_[1], Zeta_[2])
-xk, uk_,zeta1 = obj.uk_(follower_uc['gamma1'], follower_uc['P1'], Zeta_[1], wk, Zeta_[2])
+if P is None:
+    print("LCP not solvable")
+else:
+    Xi = obj.Xi(Delta_0, Delta_p, P[6], P[0])
+    #zeta = obj.Zeta(matrix_1['Ck_bar'], matrix_1['Fk_bar'], P, Xi )
+    Zeta_ = obj.Zeta_(matrix_1['Ck_bar'], matrix_1['Fk_bar'], P, Xi, matrix_1['phi_k'])
+    wk = obj.wk(leader_uc['gamma2'], matrix_1['Fk'],matrix_1['Ek'], Zeta_[1], Zeta_[2])
+    xk, uk_,zeta1 = obj.uk_(follower_uc['gamma1'], follower_uc['P1'], Zeta_[1], wk, Zeta_[2])
 
 
 
 
-#######################################################################################
-'''                           test                                                  '''
-#######################################################################################
-""" TEST 1"""
-#upsilon = follower_uc['upsilon1']
-#gamma1 = follower_uc['gamma1']
-#temp1_ = x0
-#temp11_ = x0
-#for ii in range(1, obj.K+2):
-#    temp1_ = np.dot( np.dot(upsilon[ii],A), temp1_) +  np.dot( np.dot(upsilon[ii], B_2),  wk[0,ii-1]) - np.dot(np.dot(B_1, np.linalg.inv(gamma1[ii])),np.dot(B_1.T,zeta1[0,ii]))
-#    temp11_ = np.concatenate((temp11_, temp1_), axis = 1)
-upsilon = follower_uc['upsilon1']
-gamma1 = follower_uc['gamma1']
-temp1_ = x0
-temp11_ = x0
-for ii in range(1, obj.K+2):
-    tt = np.dot(B_1, np.linalg.inv(gamma1[ii]))
-    tt_ = np.dot(B_1.T,zeta1[:,ii])
-    ttt = np.dot(tt, tt_)
-    temp1_ = np.dot( np.dot(upsilon[ii],A), temp1_) +  np.dot( np.dot(upsilon[ii], B_2),  wk[0,ii-1]) - ttt
-    temp11_ = np.concatenate((temp11_, temp1_), axis = 1)    
+    #######################################################################################
+    '''                           test                                                  '''
+    #######################################################################################
+    """ TEST 1"""
+    #upsilon = follower_uc['upsilon1']
+    #gamma1 = follower_uc['gamma1']
+    #temp1_ = x0
+    #temp11_ = x0
+    #for ii in range(1, obj.K+2):
+    #    temp1_ = np.dot( np.dot(upsilon[ii],A), temp1_) +  np.dot( np.dot(upsilon[ii], B_2),  wk[0,ii-1]) - np.dot(np.dot(B_1, np.linalg.inv(gamma1[ii])),np.dot(B_1.T,zeta1[0,ii]))
+    #    temp11_ = np.concatenate((temp11_, temp1_), axis = 1)
+    upsilon = follower_uc['upsilon1']
+    gamma1 = follower_uc['gamma1']
+    temp1_ = x0
+    temp11_ = x0
+    for ii in range(1, obj.K+2):
+        tt = np.dot(B_1, np.linalg.inv(gamma1[ii]))
+        tt_ = np.dot(B_1.T,zeta1[:,ii])
+        ttt = np.dot(tt, tt_)
+        temp1_ = np.dot( np.dot(upsilon[ii],A), temp1_) +  np.dot( np.dot(upsilon[ii], B_2),  wk[0,ii-1]) - ttt
+        temp11_ = np.concatenate((temp11_, temp1_), axis = 1)    
     
-""" TEST 2"""  
-Ck = matrix_1['Ck']
-Dk = matrix_1['Dk']
-Ek = matrix_1['Ek']
-temp2 = obj.zeta_0
-temp22 = temp2
-for ii in range(1, obj.K+2):
-    temp2 =  np.dot(Ck[ii-1], temp2 )  +   np.dot(Dk[ii-1], Zeta_[2][:,ii] ) +np.dot(Ek[ii-1], wk[0,ii-1] )
-    temp22 = np.concatenate((temp22, temp2), axis = 1)
-temp22 = temp22[2:4,:]
-    
-    
-""" TEST 3"""
-temp3 = x0
-temp33 = temp3
-for ii in range(0, obj.K+1):
-    temp3 =   np.dot(A, temp3)+np.dot(B_2,wk[:,ii])+np.dot(B_1,uk_[:,ii])
-    temp33 = np.concatenate((temp33, temp3), axis = 1)
-    
-""" TEST 4"""
-P1  = follower_uc['P1']  
-temp4_ = x0
-temp44_ = x0    
-for ii in range(1, obj.K+2):
-    temppp =  np.dot(A, temp4_) +  np.dot(B_2,  wk[0,ii-1])
-    temp4_ = temppp - np.dot(np.dot(B_1, np.linalg.inv(gamma1[ii])),np.dot(B_1.T,(np.dot(P1[ii], temppp)+zeta1[0,ii])))
-    temp44_ = np.concatenate((temp44_, temp4_), axis = 1)
+    """ TEST 2"""  
+    Ck = matrix_1['Ck']
+    Dk = matrix_1['Dk']
+    Ek = matrix_1['Ek']
+    temp2 = obj.zeta_0
+    temp22 = temp2
+    for ii in range(1, obj.K+2):
+        temp2 =  np.dot(Ck[ii-1], temp2 )  +   np.dot(Dk[ii-1], Zeta_[2][:,ii] ) +np.dot(Ek[ii-1], wk[0,ii-1] )
+        temp22 = np.concatenate((temp22, temp2), axis = 1)
+    temp22 = temp22[2:4,:]
     
     
-""" TEST 4"""
-P1  = follower_uc['P1']  
-temp5_ = x0
-temp55_ = x0    
-for ii in range(1, obj.K+2):
-    temppp =  np.dot(A, temp4_) +  np.dot(B_2,  wk[0,ii-1])
-    temp5_ = temppp - np.dot(np.dot(B_1, np.linalg.inv(gamma1[ii])),np.dot(B_1.T,(np.dot(P1[ii], temppp)+zeta1[:,ii])))
-    temp55_ = np.concatenate((temp55_, temp5_), axis = 1)
+    """ TEST 3"""
+    temp3 = x0
+    temp33 = temp3
+    for ii in range(0, obj.K+1):
+        temp3 =   np.dot(A, temp3)+np.dot(B_2,wk[:,ii])+np.dot(B_1,uk_[:,ii])
+        temp33 = np.concatenate((temp33, temp3), axis = 1)
+    
+    """ TEST 4"""
+    P1  = follower_uc['P1']  
+    temp4_ = x0
+    temp44_ = x0    
+    for ii in range(1, obj.K+2):
+        temppp =  np.dot(A, temp4_) +  np.dot(B_2,  wk[0,ii-1])
+        temp4_ = temppp - np.dot(np.dot(B_1, np.linalg.inv(gamma1[ii])),np.dot(B_1.T,(np.dot(P1[ii], temppp)+zeta1[0,ii])))
+        temp44_ = np.concatenate((temp44_, temp4_), axis = 1)
+    
+    
+    """ TEST 4"""
+    P1  = follower_uc['P1']  
+    temp5_ = x0
+    temp55_ = x0    
+    for ii in range(1, obj.K+2):
+        temppp =  np.dot(A, temp4_) +  np.dot(B_2,  wk[0,ii-1])
+        temp5_ = temppp - np.dot(np.dot(B_1, np.linalg.inv(gamma1[ii])),np.dot(B_1.T,(np.dot(P1[ii], temppp)+zeta1[:,ii])))
+        temp55_ = np.concatenate((temp55_, temp5_), axis = 1)
