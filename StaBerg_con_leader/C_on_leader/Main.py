@@ -13,6 +13,8 @@ from lemkelcp.lemkelcp import lemkelcp as lcp
 class Main:
     def __init__(self, K, n, m_1, m_2, c, s, A, B_1, B_2, M, N, r, Q_1, R_11, R_12, Q_1b, Q_2, R_21, R_22, D, L, L_Bar, Q_2b, Sf_bar, Sf_bar_b, Sl_bar, Sl_bar_b, Pl_bar, x0):
         ## dimensions
+        self.round_ = 20
+        
         self.K = K                 
         self.n = n
         self.m_1 = m_1
@@ -72,9 +74,9 @@ class Main:
         self.Bk_bar = {}
         self.xi_k = {}
         ## lcp 
-        self.M_ = np.concatenate((np.concatenate((self.D, -self.N.T), axis = 1),np.concatenate((self.N, np.zeros((self.c, self.c))), axis = 1)))
-        self.aa = np.concatenate((np.zeros(shape = (self.s,self.n)), self.L.T), axis = 1)
-        self.bb = np.concatenate((np.zeros(shape = (self.c, self.n)), self.M), axis = 1)
+        self.M_ = np.concatenate((np.concatenate((self.D, -self.N.T), axis = 1),np.concatenate((self.N, np.zeros((self.s, self.s))), axis = 1)))
+        self.aa = np.concatenate((self.L_Bar.T, self.L.T), axis = 1)
+        self.bb = np.concatenate((np.zeros(shape = (self.s, self.n)), self.M), axis = 1)
         self.q = np.concatenate((self.aa, self.bb) )
         self.zeta_0 = np.concatenate((np.zeros((self.n, 1)), self.x0))
 
@@ -82,12 +84,12 @@ class Main:
         
     def follower_noncoupled(self):
         self.P1.update({self.K+1 : self.Q_1b})
-        self.gamma1.update({self.K+1 : self.R_11 + np.dot(np.dot(self.B_1.T,self.P1[self.K+1]),self.B_1) })  
-        self.upsilon1.update({self.K+1 : np.eye(self.n) - np.dot(np.dot(np.dot(self.B_1 ,  linalg.inv(self.gamma1[self.K+1])), self.B_1.T) , self.P1[self.K+1]) })
+        self.gamma1.update({self.K+1 : np.round(self.R_11 + np.dot(np.dot(self.B_1.T,self.P1[self.K+1]),self.B_1), self.round_) })  
+        self.upsilon1.update({self.K+1 : np.round(np.eye(self.n) - np.dot(np.dot(np.dot(self.B_1 ,  linalg.inv(self.gamma1[self.K+1])), self.B_1.T) , self.P1[self.K+1]), self.round_) })
         for ii in range(self.K, -1, -1):  # K to 0, middle -1 count to 0 or it stop at 1
-            self.P1.update({ii : self.Q_1 + np.dot(np.dot(np.dot(self.A.T, self.P1[ii+1]), self.upsilon1[ii+1]),  self.A)})
-            self.gamma1.update({ii : self.R_11 + np.dot(np.dot(self.B_1.T,self.P1[ii]),self.B_1) })  
-            self.upsilon1.update({ii :  np.eye(self.n) - np.dot(np.dot(np.dot(self.B_1 ,  linalg.inv(self.gamma1[ii])), self.B_1.T) , self.P1[ii]) })
+            self.P1.update({ii : np.round(self.Q_1 + np.dot(np.dot(np.dot(self.A.T, self.P1[ii+1]), self.upsilon1[ii+1]),  self.A), self.round_)})
+            self.gamma1.update({ii : np.round(self.R_11 + np.dot(np.dot(self.B_1.T,self.P1[ii]),self.B_1), self.round_) })  
+            self.upsilon1.update({ii :  np.round(np.eye(self.n) - np.dot(np.dot(np.dot(self.B_1 ,  linalg.inv(self.gamma1[ii])), self.B_1.T) , self.P1[ii]), self.round_) })
         return {'P1' : self.P1, 'gamma1' : self.gamma1, 'upsilon1' : self.upsilon1}
 
 
@@ -95,13 +97,13 @@ class Main:
         if(len(self.P1) == 0 & len(self.gamma1) == 0 & len(self.upsilon1) == 0):
             print("Compute for follower's non-coupled parameters first before doing leader")
         else:
-            self.S21.update({self.K+1 : linalg.inv(self.gamma1[self.K+1]) * self.R_21 * linalg.inv(self.gamma1[self.K+1])})
+            self.S21.update({self.K+1 : np.round(   np.dot(np.dot(linalg.inv(self.gamma1[self.K+1]), self.R_21), linalg.inv(self.gamma1[self.K+1])), self.round_)})
             self.P2.update({self.K+1 : self.Q_2b})
-            self.gamma2.update({self.K+1 : self.R_22 + self.B_2.T * self.P1[self.K+1] * self.B_1 * self.S21[self.K+1] * self.B_1.T * self.P1[self.K+1] * self.B_2  + self.B_2.T * self.upsilon1[self.K+1].T * self.P2[self.K+1] * self.upsilon1[self.K+1] * self.B_2 }) 
+            self.gamma2.update({self.K+1 : np.round(self.R_22 + np.dot(np.dot(np.dot(np.dot(self.B_2.T, self.P1[self.K+1]), self.B_1), self.S21[self.K+1]), np.dot(np.dot(self.B_1.T, self.P1[self.K+1]), self.B_2))  + np.dot(self.B_2.T,  np.dot(np.dot(self.upsilon1[self.K+1].T,  self.P2[self.K+1]) , np.dot(self.upsilon1[self.K+1], self.B_2))), self.round_) }) 
             for ii in range(self.K, -1, -1):
-                self.S21.update({ii : linalg.inv(self.gamma1[ii]) * self.R_21 * linalg.inv(self.gamma1[ii])})
-                self.P2.update({ii :  self.Q_2 + self.A.T * self.upsilon1[ii+1].T * self.P2[ii+1] * self.upsilon1[ii+1] * self.A + self.A.T * self.P1[ii+1] * self.B_1 * self.S21[ii+1] * self.B_1.T * self.P1[ii+1]* self.A})
-                self.gamma2.update({ii : self.R_22 + self.B_2.T * self.P1[ii] * self.B_1 * self.S21[ii] * self.B_1.T * self.P1[ii] * self.B_2  + self.B_2.T * self.upsilon1[ii].T * self.P2[ii] * self.upsilon1[ii] * self.B_2 }) 
+                self.S21.update({ii : np.round(   np.dot(np.dot(linalg.inv(self.gamma1[ii]), self.R_21), linalg.inv(self.gamma1[ii])), self.round_)})
+                self.P2.update({ii :  np.round(self.Q_2 + np.dot(np.dot(self.A.T, self.upsilon1[ii+1].T), np.dot(np.dot(self.P2[ii+1], self.upsilon1[ii+1]), self.A)) + np.dot(np.dot(self.A.T, self.P1[ii+1]), np.dot(np.dot(self.B_1, self.S21[ii+1]) , np.dot(np.dot(self.B_1.T, self.P1[ii+1]), self.A))), self.round_)})
+                self.gamma2.update({ii : np.round(self.R_22 +np.dot( np.dot(self.B_2.T, self.P1[ii]), np.dot(np.dot(self.B_1, self.S21[ii]), np.dot(np.dot(self.B_1.T, self.P1[ii]), self.B_2)))  + np.dot(np.dot(self.B_2.T , self.upsilon1[ii].T) , np.dot(np.dot(self.P2[ii], self.upsilon1[ii]), self.B_2)), self.round_) }) 
         return {'P2' : self.P2, 'gamma2' : self.gamma2, 'S21' : self.S21}
     
     def Build_matrics_1(self):
@@ -110,23 +112,23 @@ class Main:
         else:
             self.phi_k[self.K+1] = np.zeros(shape = (2*self.n, 2*self.n))
             for ii in range(self.K, -1, -1):
-                ac = self.upsilon1[ii+1] * self.A
-                bc = self.B_1 * self.S21[ii+1] * self.B_1.T * self.P1[ii+1] * self.A - self.B_1 * linalg.inv(self.gamma1[ii+1]) * self.B_1.T * self.P2[ii+1] * self.upsilon1[ii+1] * self.A
+                ac = np.dot(self.upsilon1[ii+1], self.A)
+                bc = np.dot(np.dot(self.B_1 , self.S21[ii+1]) , np.dot(np.dot(self.B_1.T , self.P1[ii+1]) , self.A)) - np.dot( np.dot(self.B_1 , linalg.inv(self.gamma1[ii+1])) , np.dot(np.dot(self.B_1.T , self.P2[ii+1]) , np.dot(self.upsilon1[ii+1] , self.A)))
                 cc = np.zeros(shape=(self.n, self.n))
-                self.Ck[ii] = np.concatenate((np.concatenate((ac,bc), axis = 1),np.concatenate((cc, ac), axis = 1)))
-                ad = self.B_1 * (self.S21[ii+1] + linalg.inv(self.gamma1[ii+1]) * self.B_1.T * self.P2[ii+1] * self.B_1 * linalg.inv(self.gamma1[ii+1]) )* self.B_1.T
-                bd = -self.B_1 * linalg.inv(self.gamma1[ii+1]) * self.B_1.T 
-                self.Dk[ii] = np.concatenate((np.concatenate((ad,bd), axis = 1),np.concatenate((bd, cc), axis = 1)))
-                ae = self.B_1 * (self.S21[ii+1] * self.B_1.T * self.P1[ii+1] - linalg.inv(self.gamma1[ii+1]) * self.B_1.T * self.P2[ii+1] * self.upsilon1[ii+1]) * self.B_2
-                ce = self.upsilon1[ii+1] * self.B_2
-                self.Ek[ii] = np.concatenate((ae,ce))
-                af = self.A.T * self.upsilon1[ii+1].T * self.P1[ii+1] * self.B_2
-                cf = self.A.T * (self.upsilon1[ii+1].T* self.P2[ii+1] * self.upsilon1[ii+1] + self.P1[ii+1] * self.B_1 * self.S21[ii+1] * self.B_1.T * self.P1[ii+1]) * self.B_2
-                self.Fk[ii] = np.concatenate((af,cf))
-                self.Ck_bar[ii] = self.Ck[ii] - self.Ek[ii] * linalg.inv(self.gamma2[ii+1]) * self.Fk[ii].T
-                self.Dk_bar[ii] = self.Dk[ii] - self.Ek[ii] * linalg.inv(self.gamma2[ii+1]) * self.Ek[ii].T
-                self.Fk_bar[ii] = - self.Fk[ii] * linalg.inv(self.gamma2[ii+1]) * self.Fk[ii].T
-                self.phi_k[ii] = self.Ck_bar[ii].T * self.phi_k[ii+1] * linalg.inv(np.eye(2*self.n)-self.Dk_bar[ii] * self.phi_k[ii+1]) * self.Ck_bar[ii] + self.Fk_bar[ii]
+                self.Ck[ii] = np.round(np.concatenate((np.concatenate((ac,bc), axis = 1),np.concatenate((cc, ac), axis = 1))), self.round_)
+                ad = np.dot(np.dot(self.B_1 , (self.S21[ii+1] + np.dot(np.dot(linalg.inv(self.gamma1[ii+1]) , np.dot(self.B_1.T , self.P2[ii+1])) , np.dot(self.B_1 , linalg.inv(self.gamma1[ii+1]) )) )   )       , self.B_1.T)
+                bd = -np.dot(np.dot(self.B_1 , linalg.inv(self.gamma1[ii+1])) , self.B_1.T) 
+                self.Dk[ii] = np.round(np.concatenate((np.concatenate((ad,bd), axis = 1),np.concatenate((bd, cc), axis = 1))), self.round_)
+                ae =np.dot( np.dot(self.B_1 ,   (  np.dot(np.dot(self.S21[ii+1] , self.B_1.T) , self.P1[ii+1]) - np.dot(np.dot(linalg.inv(self.gamma1[ii+1]) , self.B_1.T) , np.dot(self.P2[ii+1] , self.upsilon1[ii+1]) )  )) , self.B_2)
+                ce = np.dot(self.upsilon1[ii+1] , self.B_2)
+                self.Ek[ii] = np.round(np.concatenate((ae,ce)), self.round_)
+                af = np.dot(np.dot(self.A.T , self.upsilon1[ii+1].T) , np.dot(self.P1[ii+1] , self.B_2))
+                cf = np.dot(np.dot(self.A.T ,  np.dot(np.dot(self.upsilon1[ii+1].T, self.P2[ii+1]) , self.upsilon1[ii+1]) + np.dot(np.dot(self.P1[ii+1] , self.B_1) , np.dot(np.dot(self.S21[ii+1] , self.B_1.T) , self.P1[ii+1]))) , self.B_2)
+                self.Fk[ii] = np.round(np.concatenate((af,cf)), self.round_)
+                self.Ck_bar[ii] = np.round(self.Ck[ii] - np.dot(self.Ek[ii] , np.dot(linalg.inv(self.gamma2[ii+1]) , self.Fk[ii].T)) , self.round_)
+                self.Dk_bar[ii] =  np.round(self.Dk[ii] - np.dot(self.Ek[ii] , np.dot(linalg.inv(self.gamma2[ii+1]) , self.Ek[ii].T)), self.round_+5)
+                self.Fk_bar[ii] = np.round(- np.dot(self.Fk[ii] , np.dot(linalg.inv(self.gamma2[ii+1]) , self.Fk[ii].T)), self.round_+5)
+                self.phi_k[ii] = np.round( np.dot(np.dot(self.Ck_bar[ii].T , self.phi_k[ii+1]) , np.dot(linalg.inv(np.eye(2*self.n)-np.dot(self.Dk_bar[ii] , self.phi_k[ii+1])) , self.Ck_bar[ii]) )+ self.Fk_bar[ii], self.round_+5)
         return {'Ck' : self.Ck, 'Dk' : self.Dk, 'Ek' : self.Ek, 'Fk' : self.Fk, 'Ck_bar' : self.Ck_bar, 'Dk_bar' : self.Dk_bar, 'Fk_bar' : self.Fk_bar, 'phi_k' : self.phi_k}
 
     def Build_matrics_2(self):
@@ -134,10 +136,10 @@ class Main:
             print(" Compute phi_k first")
         else:
             for ii in range(self.K, -1, -1):
-                temp1 = linalg.inv(np.eye(2*self.n) - self.Dk_bar[ii] * self.phi_k[ii+1])
-                self.Ak_bar.update({ii : temp1 * self.Ck_bar[ii]})
-                self.Bk_bar.update({ii : temp1 * self.Dk_bar[ii]})
-                self.xi_k.update({ii : self.Ck_bar[ii].T * linalg.inv(np.eye(2*self.n) - self.phi_k[ii+1] * self.Dk_bar[ii])}) 
+                temp1 = linalg.inv(np.eye(2*self.n) - np.dot(self.Dk_bar[ii], self.phi_k[ii+1]))
+                self.Ak_bar.update({ii : np.dot(temp1, self.Ck_bar[ii])})
+                self.Bk_bar.update({ii : np.dot(temp1, self.Dk_bar[ii])})
+                self.xi_k.update({ii : np.dot(self.Ck_bar[ii].T, linalg.inv(np.eye(2*self.n) - np.dot(self.phi_k[ii+1], self.Dk_bar[ii]) ) )}) 
         return {'Ak_bar' : self.Ak_bar, 'Bk_bar' : self.Bk_bar, 'xi_k' : self.xi_k}
     def epsilon_m_l(self, m, l):
         if(len(self.Ak_bar) == 0):
@@ -146,7 +148,7 @@ class Main:
             epsilon = np.eye(2*self.n)
             if(l < m):
                 for ii in range(m-1, l-1, -1):
-                    epsilon = epsilon * self.Ak_bar[ii]
+                    epsilon = np.dot(epsilon , self.Ak_bar[ii])
             else:
                 if(l > m):
                     epsilon = np.zeros(shape = (2*self.n, 2*self.n))
@@ -159,8 +161,8 @@ class Main:
             if(l < m):
                 Delta = np.eye(2*self.n)
                 for ii in range(m-1, l-1, -1):
-                    Delta = self.xi_k[ii] * Delta
-                Delta = Delta * self.G
+                    Delta = np.dot(self.xi_k[ii] , Delta)
+                Delta = np.dot(Delta , self.G)
             else:
                 if(l == m):
                     Delta  = self.G  
@@ -175,7 +177,7 @@ class Main:
             if(l < m):
                 Delta = np.eye(2*self.n)
                 for ii in range(m-1, l-1, -1):
-                    Delta = self.xi_k[ii] * Delta
+                    Delta = np.dot(self.xi_k[ii] , Delta)
             else:
                 if(l == m):
                     Delta  = np.eye(2*self.n)
@@ -190,7 +192,7 @@ class Main:
             minimum = np.min(a = [k, j])
             deltap_kj = np.zeros(shape = (2*self.n, (self.s + self.c)))
             for ii in range(1, minimum + 1):
-                temp = np.dot((self.epsilon_m_l(k, ii) * self.Bk_bar[ii-1]),  self.Delta_ml(j, ii))
+                temp = np.dot(np.dot(self.epsilon_m_l(k, ii) , self.Bk_bar[ii-1]),  self.Delta_ml(j, ii))
                 deltap_kj = deltap_kj + temp 
         return deltap_kj
 
@@ -215,7 +217,7 @@ class Main:
             minimum = np.min(a = [k, j])
             deltap_kj = np.zeros(shape = (2*self.n, 2*self.n))
             for ii in range(1, minimum + 1):
-                temp = np.dot((self.epsilon_m_l(k, ii) * self.Bk_bar[ii-1]),  self.Delta_ml_S(j, ii))
+                temp = np.dot(np.dot(self.epsilon_m_l(k, ii) , self.Bk_bar[ii-1]),  self.Delta_ml_S(j, ii))
                 deltap_kj = deltap_kj + temp 
         return deltap_kj
 
@@ -231,7 +233,7 @@ class Main:
                 else:
                     temp = np.concatenate((temp, self.deltap_kj_S(row, col)), axis = 1)
             temp_axis_1 = np.concatenate((temp_axis_1, temp), axis = 0)
-        return np.dot(temp_axis_1, self.S)          
+        return np.dot(temp_axis_1, self.S)         
         
     def delta_0(self):
         temp = self.epsilon_m_l(1, 0)
@@ -241,42 +243,54 @@ class Main:
       
     def LCP(self, delta_p, delta_0):
         delta_P_s = self.delta_p_S()
+        #delta_P_s = delta_P_s[1]
         I = np.eye(self.K+1)
         M_tilde = np.kron(I, self.M_)
         q_tilde = np.kron(I, self.q)
         s_tilde = np.kron(np.ones((self.K+1, 1)), np.concatenate( ( self.Pl_bar, self.r) ))
         Big_M = M_tilde + np.dot(q_tilde, delta_p)
         Big_q = s_tilde + np.dot(q_tilde, np.dot(delta_0, self.zeta_0)) + np.dot(q_tilde, delta_P_s)
-        eigen_vals = np.linalg.eigvals(np.array([Big_M]))
-        if eigen_vals.dtype == 'complex128':
-            print("error : LCP matrix has complex eigen values")
-            p = -1
-            #return None
-            return None, None, None, None, Big_M, Big_q, eigen_vals
+#        eigen_vals = np.linalg.eigvals(np.array([Big_M]))
+#        if eigen_vals.dtype == 'complex128':
+#            print("error : LCP matrix has complex eigen values")
+#            p = -1
+#            #return None
+#            return None, None, None, None, Big_M, Big_q, eigen_vals
+#        else:
+#            p = lcp(Big_M, Big_q)
+#            p_0 = lcp(self.M_, np.dot(self.q, self.zeta_0) + np.concatenate( ( np.zeros( (self.s, 1) ), self.r)))
+#            if p[0] is None:        
+#                p_ = None       
+#            else:
+#                p_ = np.reshape(p[0], (self.s+self.c, self.K+1),'F') 
+#            return np.array([p[0]]).T, np.array([p_0[0]]).T, p_, p, Big_M, Big_q, delta_P_s
+
+            
+        p = lcp(Big_M, Big_q)
+        p_0 = lcp(self.M_, np.dot(self.q, self.zeta_0) + np.concatenate( ( self.Pl_bar, self.r) ))
+        if p[0] is None:        
+            p_ = None       
         else:
-            p = lcp(Big_M, Big_q)
-            p_0 = lcp(self.M_, np.dot(self.q, self.zeta_0) + np.concatenate( ( np.zeros( (self.s, 1) ), self.r)))
-            if p[0] is None:        
-                p_ = None       
-            else:
-                p_ = np.reshape(p[0], (self.s+self.c, self.K+1),'F') 
-            return np.array([p[0]]).T, np.array([p_0[0]]).T, p_, p, Big_M, Big_q, delta_P_s
+            p_ = np.reshape(p[0], (self.s+self.c, self.K+1),'F') 
+        return np.array([p[0]]).T, np.array([p_0[0]]).T, p_, p, Big_M, Big_q, delta_P_s
         
         
     def Xi(self, delta_0, delta_p, delta_P_s, p):
         Xi = np.dot(delta_0, self.zeta_0) + np.dot(delta_p, p) + delta_P_s
         Xi_ = np.reshape(Xi, (2*self.n, self.K+1),'F')
+#        return np.round(Xi, self.round_), np.round(Xi_, self.round_)
         return Xi, Xi_
         ############################################### have to modify after this
     def Zeta(self, C_k_bar, F_k_bar , P, Xi): # modify xi and p
         p_k =  np.concatenate((P[1] ,P[2]), axis = 1)
         Xi =  np.concatenate((self.zeta_0 ,Xi[1]), axis = 1)
-        zeta_K_plus_1 = np.dot(self.G, np.array([p_k[:, self.K]]).T)
+        zeta_K_plus_1 = np.dot(self.G, np.array([p_k[:, self.K]]).T)+self.Sbar_b
         zeta =  zeta_K_plus_1
         temp = zeta 
         for ii in range(self.K, -1, -1):
-            temp =  np.dot(C_k_bar[ii].T, temp) + np.dot(F_k_bar[ii], Xi[:, ii]) + np.dot(self.G, np.array([p_k[:, ii]]).T)
+            temp =  np.dot(C_k_bar[ii].T, temp) + np.dot(F_k_bar[ii], Xi[:, ii]) + np.dot(self.G, np.array([p_k[:, ii]]).T)+self.Sbar
             zeta = np.concatenate((temp , zeta), axis = 1)
+#        return np.round(p_k, self.round_), np.round(Xi, self.round_), np.round(zeta, self.round_)
         return p_k, Xi, zeta
                 
     def Zeta_(self, C_k_bar, F_k_bar , P, Xi, phi): # modify xi and p
@@ -300,6 +314,17 @@ class Main:
             zeta = np.concatenate((temp , zeta), axis = 1)        
         return p_k, Xi, zeta, delta
         
+#    def wk(self, gamma2, Fk, Ek, Xi, zeta):
+#        temp = (np.dot(Fk[self.K].T, Xi[:, self.K])+ np.dot(Ek[self.K].T, zeta[:, self.K+1]))
+#        wk = - np.dot(np.linalg.inv(gamma2[self.K+1]), temp)
+#        wk = np.array([wk])
+#        for ii in range(self.K-1, -1, -1):
+#             temp1 = - np.dot(np.linalg.inv(gamma2[ii+1]), (np.dot(Fk[ii].T, Xi[:, ii])+ np.dot(Ek[ii].T, zeta[:, ii+1]))) 
+#             temp1 = np.array([temp1])
+#             wk = np.concatenate((temp1, wk), axis = 1)
+#        return wk
+        
+    
     def wk(self, gamma2, Fk, Ek, Xi, zeta):
         temp = (np.dot(Fk[self.K].T, Xi[:, self.K])+ np.dot(Ek[self.K].T, zeta[:, self.K+1]))
         wk = - np.dot(np.linalg.inv(gamma2[self.K+1]), temp)
@@ -313,11 +338,19 @@ class Main:
         zeta1 = zeta[list(range(0, self.n)) , :]
         uk = {}
         temp4_ = self.x0  
+        print(temp4_)
+#        for ii in range(1, self.K+2):
+#            temppp =  np.dot(self.A, temp4_) +  np.dot(self.B_2,  wk[:,ii-1])
+#            temp4_ = temppp - np.dot(np.dot(self.B_1, np.linalg.inv(gamma1[ii])),np.dot(self.B_1.T,(np.dot(P1[ii], temppp)+zeta1[:,ii])))
+#            temp4 = -np.dot(np.dot(np.linalg.inv(gamma1[ii]), self.B_1.T),(np.dot(P1[ii], temppp)+zeta1[:,ii]))
+#            uk.update({ii-1 : temp4})
         for ii in range(1, self.K+2):
-            temppp =  np.dot(self.A, temp4_) +  np.dot(self.B_2,  wk[:,ii-1])
-            temp4_ = temppp - np.dot(np.dot(self.B_1, np.linalg.inv(gamma1[ii])),np.dot(self.B_1.T,(np.dot(P1[ii], temppp)+zeta1[:,ii])))
-            temp4 = -np.dot(np.dot(np.linalg.inv(gamma1[ii]), self.B_1.T),(np.dot(P1[ii], temppp)+zeta1[:,ii]))
-            uk.update({ii-1 : temp4})
+            TEMPPP = np.dot(self.B_2,  wk[:,ii-1])
+            TEMPP = np.dot(np.dot(self.B_1.T, P1[ii]) ,(np.dot(self.A, temp4_) + TEMPPP ))
+            temppp = - np.dot( np.linalg.inv(gamma1[ii]) ,TEMPP + np.dot(self.B_1.T, zeta1[:,ii])) 
+            temp4_ =   np.dot(self.A, temp4_)+np.dot(self.B_2,wk[:,ii-1])+np.dot(self.B_1, temppp)
+            print(temp4_)
+            uk.update({ii-1 : temppp})        
         temp1 = uk[0]
         for jj in range(1, self.K+1):
             temp1 = np.concatenate((temp1, uk[jj]), axis = 1)

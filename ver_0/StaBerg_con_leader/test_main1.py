@@ -83,7 +83,7 @@ from C_on_leader.main1 import main1
 
 
 """ data 3"""
-K = 5#
+K = 15#
 n = 4#
 m_1 = 2#
 m_2 = 2#

@@ -2,6 +2,9 @@ import numpy as np
 from C_on_leader.Main import Main
 
 
+####
+
+
 ######### matrics and dimensions
 # K = number of stages (0 -> T)
 # n = x_k dimension of states
@@ -11,59 +14,92 @@ from C_on_leader.Main import Main
 # s = constrainghts dim
 
 
-K = 6#
-n = 4#
-m_1 = 2#
-m_2 = 2#
-c = 1#
-s = 1#
+#K = 6#
+#n = 4#
+#m_1 = 2#
+#m_2 = 2#
+#c = 1#
+#s = 1#
+#
+#
+#
+#
+#A = np.matrix([[0.8, 0, 0, 0], [0, 0.8, 0, 0], [0, 0, 0.1, 0], [0, 0, 0, 0.1]])#
+#B_2 = np.matrix([[1, 0], [0.75, 0], [0, 1], [0, 0]])# leader
+#B_1 = np.matrix([[0.75, 0], [1, 0], [0, 0], [0, 1]])# follower
+#Q_1  = -0.5*(np.matrix([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0.2, 0, 0]]) + np.dot(np.matrix([[0], [0], [0], [1]]), np.matrix([[0, 0, 0, 0.5]])) )#follower
+#Q_2 = 0.5*np.matrix([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])# leader 
+#R_11 = 0.5*np.matrix([[0.75, 0], [0, 0.375]]) # follower
+#R_22 = 0.5*np.matrix([[0.75, 0], [0, 0.375]]) #leader
+#R_12 = 0.5*np.matrix([[0, 0], [0, 0]])# 
+#R_21 = 0.5*np.matrix([[0, 0], [0, 0]])#
+#Q_1b = -0.5*np.matrix([[0, 0, 0, 0], [0, 0.5, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0.25]]) + 0.5*Q_1 # follower
+#Q_2b = -0.5*np.matrix([[0.5, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0.25, 0], [0, 0, 0, 0]]) # leader
+#M = np.matrix([[0, 0, 1, 0]])#
+#N = np.matrix([[-1]])#
+#r = np.matrix([[0]])#
+#D = 0.5*np.matrix([[0.5]])# leader
+#L = - np.matrix([[0],[0],[0],[0.2]]) -  np.matrix([[0],[0],[0],[0.5]])#
+#
+#L_Bar = np.matrix([[0], [0], [0], [0.5]]) #
+#Pl_bar = np.matrix([[0.5]]) - np.matrix([[3]]) #
+#Sf_bar = np.matrix([[0], [0], [0], [0.5]]) - np.matrix([[0], [0], [0], [3]]) #
+#Sf_bar_b = Sf_bar#
+#Sl_bar = np.matrix([[0], [0], [0], [0]])#
+#Sl_bar_b = np.matrix([[0], [0], [0], [0]])#
+#
+#x0 = np.matrix([[30], [2], [3], [3]])#
 
 
+##############
+K = 10
+n = 1
+m_1 = 1
+m_2 = 1
+c = 2
+s = 2
 
 
-A = np.matrix([[0.8, 0, 0, 0], [0, 0.8, 0, 0], [0, 0, 0.4, 0], [0, 0, 0, 0.1]])#
-B_2 = np.matrix([[1, 0], [0.75, 0], [0, 1], [0, 0]])# leader
-B_1 = np.matrix([[0.75, 0], [1, 0], [0, 0], [0, 1]])# follower
-Q_1  = -0.5*(np.matrix([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0.2, 0, 0]]) + np.dot(np.matrix([[0], [0], [0], [1]]), np.matrix([[0, 0, 0, 0.5]])) )#follower
-Q_2 = 0.5*np.matrix([[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]])# leader 
-R_11 = 0.5*np.matrix([[0.75, 0], [0, 0.375]]) # follower
-R_22 = 0.5*np.matrix([[0.75, 0], [0, 0.375]]) #leader
-R_12 = 0.5*np.matrix([[0, 0], [0, 0]])# 
-R_21 = 0.5*np.matrix([[0, 0], [0, 0]])#
-Q_1b = -0.5*np.matrix([[0, 0, 0, 0], [0, 0.5, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0.25]]) + 0.5*Q_1 # follower
-Q_2b = -0.5*np.matrix([[0.5, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0.25, 0], [0, 0, 0, 0]]) # leader
-M = np.matrix([[0, 0, 1, 0]])#
-N = np.matrix([[-1]])#
-r = np.matrix([[0]])#
-D = 0.5*np.matrix([[0.5]])# leader
-L = - np.matrix([[0],[0],[0],[0.2]]) -  np.matrix([[0],[0],[0],[0.5]])#
-
-L_Bar = np.matrix([[0], [0], [0], [0.5]]) #
-Pl_bar = np.matrix([[0.5]]) - np.matrix([[3]]) #
-Sf_bar = np.matrix([[0], [0], [0], [0.5]]) - np.matrix([[0], [0], [0], [3]]) #
-Sf_bar_b = Sf_bar#
-Sl_bar = np.matrix([[0], [0], [0], [0]])#
-Sl_bar_b = np.matrix([[0], [0], [0], [0]])#
-
-x0 = np.matrix([[30], [2], [3], [3]])#
-
-
-
-
-obj = Main(K, n, m_1, m_2, c, s, A, B_1, B_2, M, N, r, Q_1, R_11, R_12, Q_1b, Q_2, R_21, R_22, D, L, L_Bar, Q_2b, Sf_bar, Sf_bar_b, Sl_bar, Sl_bar_b, Pl_bar, x0)
-follower_uc = obj.follower_noncoupled()
-leader_uc = obj.leader_noncoupled()
-matrix_1 = obj.Build_matrics_1()
-matrix_2 = obj.Build_matrics_2()
-#Delta_p = obj.delta_p()
-Delta_p = obj.delta_p_() 
-Delta_0 = obj.delta_0()  
-P = obj.LCP(Delta_p, Delta_0)
-Xi = obj.Xi(Delta_0, Delta_p, P[6], P[0])
-zeta = obj.Zeta(matrix_1['Ck_bar'], matrix_1['Fk_bar'], P, Xi )
-Zeta_ = obj.Zeta_(matrix_1['Ck_bar'], matrix_1['Fk_bar'], P, Xi, matrix_1['phi_k'])
-wk = obj.wk(leader_uc['gamma2'], matrix_1['Fk'],matrix_1['Ek'], zeta[1], zeta[2])
-xk, uk_,zeta1 = obj.uk_(follower_uc['gamma1'], follower_uc['P1'], zeta[1], wk, zeta[2])
+A = np.matrix([[15]])
+B_1 = np.matrix([[20]])
+B_2 = np.matrix([[1]])
+Q_1  = np.matrix([[2]])
+Q_2 = np.matrix([[4]])
+R_11 = np.matrix([[1]])
+R_22 = np.matrix([[7]])
+R_12 = np.matrix([[0]])
+R_21 = np.matrix([[0]])
+Q_1b = np.matrix([[1]])
+Q_2b = np.matrix([[2]])
+M = np.matrix([[2],[1]])
+N = np.matrix([[1, 3],[3, 5]])
+r = np.matrix([[0], [8]])
+D = np.matrix([[1, 0], [0, 24]])
+L = np.matrix([[1, 8]])
+x0 = np.matrix([[10]])
+#
+L_Bar = np.matrix([[0.4, 0.5]]) # n*c
+Pl_bar = np.matrix([[1], [0]])  # c*1
+Sf_bar = np.matrix([[1]])  # n*1
+Sf_bar_b = np.matrix([[1]]) # n*1
+Sl_bar = np.matrix([[1]])#n*1
+Sl_bar_b = np.matrix([[1]])#n*1
+##########
+#
+#obj = Main(K, n, m_1, m_2, c, s, A, B_1, B_2, M, N, r, Q_1, R_11, R_12, Q_1b, Q_2, R_21, R_22, D, L, L_Bar, Q_2b, Sf_bar, Sf_bar_b, Sl_bar, Sl_bar_b, Pl_bar, x0)
+#follower_uc = obj.follower_noncoupled()
+#leader_uc = obj.leader_noncoupled()
+#matrix_1 = obj.Build_matrics_1()
+#matrix_2 = obj.Build_matrics_2()
+##Delta_p = obj.delta_p()
+#Delta_p = obj.delta_p_() 
+#Delta_0 = obj.delta_0()  
+#P = obj.LCP(Delta_p, Delta_0)
+#Xi = obj.Xi(Delta_0, Delta_p, P[6], P[0])
+##zeta = obj.Zeta(matrix_1['Ck_bar'], matrix_1['Fk_bar'], P, Xi )
+#zeta_ = obj.Zeta_(matrix_1['Ck_bar'], matrix_1['Fk_bar'], P, Xi, matrix_1['phi_k'])
+#wk = obj.wk(leader_uc['gamma2'], matrix_1['Fk'],matrix_1['Ek'], zeta_[1], zeta_[2])
+#xk, uk_,zeta1 = obj.uk_(follower_uc['gamma1'], follower_uc['P1'], zeta_[1], wk, zeta_[2])
 
 
 #######################################################################################
@@ -89,7 +125,7 @@ Ek = matrix_1['Ek']
 temp2 = obj.zeta_0
 temp22 = temp2
 for ii in range(1, obj.K+2):
-    temp2 =  np.dot(Ck[ii-1], temp2 )  +   np.dot(Dk[ii-1], zeta[2][:,ii] ) +np.dot(Ek[ii-1], wk[0,ii-1] )
+    temp2 =  np.dot(Ck[ii-1], temp2 )  +   np.dot(Dk[ii-1], zeta_[2][:,ii] ) +np.dot(Ek[ii-1], wk[0,ii-1] )
     temp22 = np.concatenate((temp22, temp2), axis = 1)
     
     
